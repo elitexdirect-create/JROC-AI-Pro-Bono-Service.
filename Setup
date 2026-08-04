@@ -1,0 +1,315 @@
+#!/usr/bin/env bash
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+#  JROC's AI Pro Bono Service â€” GitHub Project Board Setup
+#  Creates milestones, labels, and issues using the GitHub CLI (gh)
+#
+#  REQUIREMENTS: gh CLI authenticated  â†’  gh auth login
+#  USAGE:
+#    bash scripts/setup_github_project.sh realjayroc215 jroc-ai-pro-bono
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+set -euo pipefail
+
+OWNER="${1:-realjayroc215}"
+REPO="${2:-jroc-ai-pro-bono}"
+FULL_REPO="$OWNER/$REPO"
+
+GRN="\033[0;32m"; BLU="\033[0;34m"; YLW="\033[0;33m"; RED="\033[0;31m"
+BOLD="\033[1m"; R="\033[0m"
+ok()  { echo -e "${GRN}âœ”${R}  $*"; }
+hdr() { echo -e "\n${BOLD}${BLU}â•â• $* â•â•${R}"; }
+wrn() { echo -e "${YLW}âš ${R}  $*"; }
+err() { echo -e "${RED}âœ˜${R}  $*" >&2; }
+
+# â”€â”€ Preflight â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+hdr "Preflight checks"
+if ! command -v gh &>/dev/null; then
+  err "GitHub CLI (gh) not found. Install: https://cli.github.com"
+  exit 1
+fi
+if ! gh auth status &>/dev/null; then
+  err "Not authenticated. Run: gh auth login"
+  exit 1
+fi
+ok "gh CLI authenticated"
+echo "  Targeting: github.com/$FULL_REPO"
+
+# â”€â”€ Milestones â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+hdr "Creating milestones"
+
+create_milestone() {
+  local title="$1" due="$2" desc="$3"
+  gh api "repos/$FULL_REPO/milestones" \
+    --method POST \
+    --field title="$title" \
+    --field due_on="${due}T07:00:00Z" \
+    --field description="$desc" \
+    --silent && ok "Milestone: $title" || wrn "Milestone may already exist: $title"
+}
+
+create_milestone "v1.1.0 - Polish"          "2024-09-30" "UX refinements, streaming chat, mobile polish, rate limiting"
+create_milestone "v1.2.0 - Intelligence"    "2024-10-31" "Smarter agents, hybrid search, jurisdiction awareness, LangGraph"
+create_milestone "v1.3.0 - Community"       "2024-11-30" "Resource directory, SMS alerts, feedback system, accessibility"
+create_milestone "v2.0.0 - Attorney Portal" "2025-01-31" "Human-in-the-loop, case assignment, admin panel, secure messaging"
+create_milestone "v2.1.0 - Mobile App"      "2025-03-31" "React Native iOS + Android app, push notifications, camera upload"
+create_milestone "v2.2.0 - Live Support"    "2025-05-31" "Real-time messaging, video calls, volunteer network"
+create_milestone "v2.3.0 - Analytics"       "2025-07-31" "Impact dashboard, grant exports, A/B testing framework"
+create_milestone "v3.0.0 - Platform"        "2026-01-31" "Multi-tenant SaaS, white-label, Kubernetes, SOC 2"
+create_milestone "v3.1.0 - Marketplace"     "2026-03-31" "Attorney marketplace, booking, escrow payments, reviews"
+create_milestone "v3.2.0 - Voice + SMS"     "2026-06-30" "Twilio IVR, SMS sessions, PWA offline, email interface"
+
+# â”€â”€ Labels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+hdr "Creating labels"
+
+create_label() {
+  local name="$1" color="$2" desc="$3"
+  gh api "repos/$FULL_REPO/labels" \
+    --method POST \
+    --field name="$name" \
+    --field color="$color" \
+    --field description="$desc" \
+    --silent && ok "Label: $name" || wrn "Label may already exist: $name"
+}
+
+# Version labels
+create_label "v1.1"              "0075ca" "v1.1.0 - Polish milestone"
+create_label "v1.2"              "0052a3" "v1.2.0 - Intelligence milestone"
+create_label "v1.3"              "003380" "v1.3.0 - Community milestone"
+create_label "v2.0"              "6e40c9" "v2.0.0 - Attorney Portal milestone"
+create_label "v2.1"              "5a32a3" "v2.1.0 - Mobile App milestone"
+create_label "v2.2"              "46257d" "v2.2.0 - Live Support milestone"
+create_label "v2.3"              "321857" "v2.3.0 - Analytics milestone"
+create_label "v3.0"              "1a7f37" "v3.0.0 - Platform milestone"
+create_label "v3.1"              "126b2c" "v3.1.0 - Marketplace milestone"
+create_label "v3.2"              "0a5720" "v3.2.0 - Voice + SMS milestone"
+
+# Domain labels
+create_label "agent"             "e4e669" "Multi-agent system changes"
+create_label "ingestion"         "f9d0c4" "Document ingestion pipeline"
+create_label "frontend"          "cfd3d7" "Next.js UI / components"
+create_label "backend"           "bfd4f2" "FastAPI backend"
+create_label "database"          "b60205" "Supabase / migrations / RPC"
+create_label "security"          "d93f0b" "Security, RLS, authentication"
+create_label "infrastructure"    "0e8a16" "Docker, CI/CD, deployment"
+create_label "accessibility"     "e99695" "A11y / WCAG improvements"
+create_label "mobile"            "c5def5" "React Native mobile app"
+create_label "analytics"         "fef2c0" "Metrics, dashboards, reporting"
+create_label "docs"              "ffffff" "Documentation"
+create_label "test"              "f4f4f4" "Tests and coverage"
+
+# Priority labels
+create_label "priority: critical" "b60205" "Must fix immediately - production blocker"
+create_label "priority: high"     "d93f0b" "Fix this sprint"
+create_label "priority: medium"   "e4e669" "Next sprint"
+create_label "priority: low"      "cfd3d7" "Backlog - nice to have"
+
+# Contribution labels
+create_label "good first issue"   "7057ff" "Great for new contributors"
+create_label "help wanted"        "008672" "Community help needed"
+create_label "needs review"       "fbca04" "PR ready for review"
+create_label "blocked"            "e11d48" "Blocked by external dependency"
+create_label "wontfix"            "ffffff" "Will not be fixed"
+create_label "duplicate"          "cfd3d7" "Duplicate issue"
+
+# â”€â”€ Issues â€” v1.1.0 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+hdr "Creating issues â€” v1.1.0 Polish"
+
+# Get milestone numbers
+M11=$(gh api "repos/$FULL_REPO/milestones" --jq '.[] | select(.title | startswith("v1.1")) | .number')
+M12=$(gh api "repos/$FULL_REPO/milestones" --jq '.[] | select(.title | startswith("v1.2")) | .number')
+M13=$(gh api "repos/$FULL_REPO/milestones" --jq '.[] | select(.title | startswith("v1.3")) | .number')
+M20=$(gh api "repos/$FULL_REPO/milestones" --jq '.[] | select(.title | startswith("v2.0")) | .number')
+M21=$(gh api "repos/$FULL_REPO/milestones" --jq '.[] | select(.title | startswith("v2.1")) | .number')
+M23=$(gh api "repos/$FULL_REPO/milestones" --jq '.[] | select(.title | startswith("v2.3")) | .number')
+M30=$(gh api "repos/$FULL_REPO/milestones" --jq '.[] | select(.title | startswith("v3.0")) | .number')
+M32=$(gh api "repos/$FULL_REPO/milestones" --jq '.[] | select(.title | startswith("v3.2")) | .number')
+
+create_issue() {
+  local title="$1" body="$2" labels="$3" milestone="$4"
+  gh issue create \
+    --repo "$FULL_REPO" \
+    --title "$title" \
+    --body "$body" \
+    --label "$labels" \
+    --milestone "$milestone" \
+    && ok "Issue: $title" || wrn "Failed to create issue: $title"
+}
+
+create_issue \
+  "feat: Add SSE streaming chat responses" \
+  "## Overview\nImplement Server-Sent Events (SSE) endpoint for token-by-token streaming chat.\n\n## Tasks\n- [ ] Add \`/chat/stream\` SSE endpoint in FastAPI\n- [ ] Update SupervisorAgent to yield tokens\n- [ ] Frontend SSE consumer in \`use-chat\` hook\n- [ ] Display tokens as they arrive in ChatMessage component\n- [ ] Handle stream errors + reconnect\n\n## Acceptance Criteria\n- User sees words appear as AI types them\n- Stream closes cleanly on completion or error\n- Works on mobile browsers" \
+  "v1.1,backend,frontend,agent,priority: high" "$M11"
+
+create_issue \
+  "feat: Dark mode toggle with localStorage persistence" \
+  "## Overview\nAdd dark/light mode toggle to the frontend.\n\n## Tasks\n- [ ] Add \`ThemeProvider\` wrapping layout.tsx\n- [ ] Toggle button in Sidebar component\n- [ ] Persist selection in localStorage\n- [ ] Respect system \`prefers-color-scheme\` on first load\n- [ ] Update all component classes for dark variants\n\n## Acceptance Criteria\n- Toggle works without page reload\n- Selection persists across sessions\n- All pages render correctly in both modes" \
+  "v1.1,frontend,accessibility,priority: medium" "$M11"
+
+create_issue \
+  "feat: Rate limiting middleware (per-user Redis)" \
+  "## Overview\nAdd per-user rate limiting to the FastAPI backend using Redis.\n\n## Tasks\n- [ ] Add \`slowapi\` or custom Redis token bucket middleware\n- [ ] 60 req/min per authenticated user\n- [ ] 10 req/min for unauthenticated (health/auth routes only)\n- [ ] 429 response with \`Retry-After\` header\n- [ ] Exclude /health from rate limiting\n\n## Acceptance Criteria\n- Exceeding limit returns 429 with clear message\n- Redis tracks counts with TTL\n- Tests confirm limit enforcement" \
+  "v1.1,backend,security,infrastructure,priority: high" "$M11"
+
+create_issue \
+  "feat: Pagination on all list endpoints" \
+  "## Overview\nAll list endpoints should support cursor/offset pagination.\n\n## Tasks\n- [ ] Add \`limit\`, \`offset\`, \`total\` to CaseService, ChatService, DocumentService\n- [ ] Update Pydantic response schemas with \`PaginatedResponse[T]\`\n- [ ] Update frontend to load next page on scroll\n- [ ] Add 'Load more' button as fallback\n\n## Acceptance Criteria\n- GET /cases returns \`{items, total, limit, offset}\`\n- Frontend shows total count and paginates correctly" \
+  "v1.1,backend,frontend,priority: medium" "$M11"
+
+create_issue \
+  "feat: Sentry error tracking integration" \
+  "## Overview\nAdd Sentry for production error monitoring.\n\n## Tasks\n- [ ] Install sentry-sdk in requirements.txt\n- [ ] Initialize Sentry in app/main.py with DSN from env\n- [ ] Add SENTRY_DSN to .env.example\n- [ ] Install @sentry/nextjs in frontend\n- [ ] Add sentry.client.config.ts + sentry.server.config.ts\n- [ ] Verify errors appear in Sentry dashboard\n\n## Acceptance Criteria\n- Backend 500 errors appear in Sentry within 30s\n- Frontend JS errors captured with user context" \
+  "v1.1,backend,frontend,infrastructure,priority: high" "$M11"
+
+create_issue \
+  "chore: Add pre-commit hooks (ruff + mypy)" \
+  "## Overview\nPrevent bad code from being committed.\n\n## Tasks\n- [ ] Add \`.pre-commit-config.yaml\`\n- [ ] Ruff lint + format check\n- [ ] mypy type check on backend\n- [ ] ESLint on frontend\n- [ ] Add install step to setup.sh\n\n## Acceptance Criteria\n- \`git commit\` fails if any hook fails\n- CI mirrors same checks" \
+  "v1.1,infrastructure,backend,priority: medium" "$M11"
+
+# â”€â”€ Issues â€” v1.2.0 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+hdr "Creating issues â€” v1.2.0 Intelligence"
+
+create_issue \
+  "feat: Jurisdiction-aware agent routing" \
+  "## Overview\nAgents should adapt responses based on the user's state/jurisdiction.\n\n## Tasks\n- [ ] Add \`jurisdiction\` field to User profile + Case schema\n- [ ] Intake agent captures state during onboarding\n- [ ] Pass jurisdiction context to all specialist agents\n- [ ] Legal Research agent filters chunks by jurisdiction metadata\n- [ ] Update system prompts to include jurisdiction\n\n## Acceptance Criteria\n- PA user gets PA-specific statutes and resources\n- Jurisdiction stored in DB and passed in every agent context" \
+  "v1.2,agent,database,priority: high" "$M12"
+
+create_issue \
+  "feat: Hybrid search (pgvector + pg_trgm keyword)" \
+  "## Overview\nCombine semantic vector search with keyword full-text search for better retrieval.\n\n## Tasks\n- [ ] Enable pg_trgm extension in Supabase migration\n- [ ] Add GIN index on document_chunks.content\n- [ ] Update match_document_chunks RPC to do hybrid search\n- [ ] Weighted scoring: 0.7 semantic + 0.3 keyword\n- [ ] A/B test vs pure vector search quality\n\n## Acceptance Criteria\n- Hybrid search returns more relevant results on keyword-heavy queries\n- Latency stays below 500ms at p95" \
+  "v1.2,database,agent,priority: high" "$M12"
+
+create_issue \
+  "feat: Cohere reranking for retrieved chunks" \
+  "## Overview\nAfter vector search, rerank top-20 chunks using Cohere Rerank API before passing to LLM.\n\n## Tasks\n- [ ] Install cohere Python SDK\n- [ ] Add COHERE_API_KEY to .env.example\n- [ ] Update VectorSearchService.search() to rerank top-20 â†’ return top-5\n- [ ] Log reranking scores for quality monitoring\n\n## Acceptance Criteria\n- LLM receives highest-relevance chunks\n- Measurable improvement in citation accuracy" \
+  "v1.2,agent,ingestion,priority: medium" "$M12"
+
+create_issue \
+  "feat: LangGraph stateful agent workflow" \
+  "## Overview\nReplace simple if/else supervisor routing with LangGraph stateful graph.\n\n## Tasks\n- [ ] Install langgraph\n- [ ] Define AgentState TypedDict\n- [ ] Build graph: START â†’ supervisor â†’ [research|intake|drafting|escalation] â†’ END\n- [ ] Add conditional edges based on supervisor classification\n- [ ] Persist graph state in Redis for multi-turn sessions\n\n## Acceptance Criteria\n- All existing agent tests pass against new graph\n- Agent can hand off mid-conversation (e.g., intake â†’ drafting)" \
+  "v1.2,agent,backend,priority: high" "$M12"
+
+create_issue \
+  "feat: TimelineAgent â€” case chronology builder" \
+  "## Overview\nNew specialist agent that builds a chronological timeline of events from user input.\n\n## Tasks\n- [ ] Create app/agents/timeline.py\n- [ ] Prompt extracts dates, events, and parties from conversation\n- [ ] Returns structured JSON timeline\n- [ ] Frontend renders timeline as vertical card list\n- [ ] Export timeline as PDF attachment to case\n\n## Acceptance Criteria\n- Given 5+ described events, agent produces sorted timeline\n- Timeline visible on case detail page" \
+  "v1.2,agent,frontend,priority: medium" "$M12"
+
+# â”€â”€ Issues â€” v1.3.0 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+hdr "Creating issues â€” v1.3.0 Community"
+
+create_issue \
+  "feat: Legal resource directory by zip code" \
+  "## Overview\nSearchable database of free legal aid organizations filterable by zip code and specialty.\n\n## Tasks\n- [ ] Create \`legal_resources\` table in Supabase\n- [ ] Seed with 50+ PA legal aid organizations\n- [ ] Add search endpoint GET /resources?zip=19036&category=housing\n- [ ] Frontend: /resources page with search + map view\n- [ ] Link resources to relevant AI responses\n\n## Acceptance Criteria\n- User in 19036 sees Glenolden-area legal aid orgs\n- Results filterable by legal category" \
+  "v1.3,backend,frontend,database,priority: high" "$M13"
+
+create_issue \
+  "feat: Twilio SMS notifications for escalations" \
+  "## Overview\nSend SMS to user's phone when their case is escalated or assigned.\n\n## Tasks\n- [ ] Add \`phone_number\` field to User profile\n- [ ] Install twilio Python SDK\n- [ ] Add TWILIO_* env vars to .env.example\n- [ ] Create NotificationService with send_sms() method\n- [ ] Trigger SMS in EscalationAgent and case assignment flow\n- [ ] Add SMS opt-out preference to user settings\n\n## Acceptance Criteria\n- User receives SMS within 60s of escalation\n- Opt-out stored and respected" \
+  "v1.3,backend,priority: medium" "$M13"
+
+create_issue \
+  "feat: AI response feedback (thumbs up/down)" \
+  "## Overview\nUsers can rate AI responses to improve quality over time.\n\n## Tasks\n- [ ] Add \`message_feedback\` table (message_id, user_id, rating, comment)\n- [ ] Add thumbs up/down buttons to ChatMessage component\n- [ ] POST /chat/{id}/feedback endpoint\n- [ ] Dashboard shows avg rating by agent type\n- [ ] Low-rated responses flagged for human review\n\n## Acceptance Criteria\n- User can rate any AI message\n- Rating persists and visible in admin panel" \
+  "v1.3,frontend,backend,database,priority: medium" "$M13"
+
+create_issue \
+  "feat: WCAG 2.1 AA accessibility audit + fixes" \
+  "## Overview\nFull accessibility pass on all frontend pages.\n\n## Tasks\n- [ ] Run axe-core audit on all pages\n- [ ] Fix all WCAG 2.1 AA violations\n- [ ] Add ARIA labels to all icon-only buttons\n- [ ] Keyboard navigation for chat, cases, documents\n- [ ] Focus trap in modals/dialogs\n- [ ] Color contrast ratio â‰¥ 4.5:1 on all text\n- [ ] Add skip-to-content link\n\n## Acceptance Criteria\n- Zero WCAG 2.1 AA violations in axe audit\n- All interactive elements keyboard-accessible" \
+  "v1.3,frontend,accessibility,priority: high" "$M13"
+
+# â”€â”€ Issues â€” v2.0.0 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+hdr "Creating issues â€” v2.0.0 Attorney Portal"
+
+create_issue \
+  "feat: Attorney registration + bar number verification" \
+  "## Overview\nAllow licensed attorneys to register and be verified on the platform.\n\n## Tasks\n- [ ] Add \`attorneys\` table with profile fields\n- [ ] Add \`role: attorney\` to auth system\n- [ ] Registration form with bar number + state\n- [ ] State bar API integration (or manual admin approval)\n- [ ] Attorney approval email via Resend\n- [ ] Attorney profile page (public)\n\n## Acceptance Criteria\n- Attorney cannot access portal until approved\n- Bar number stored and displayed on profile" \
+  "v2.0,backend,frontend,database,security,priority: high" "$M20"
+
+create_issue \
+  "feat: Smart case-to-attorney matching engine" \
+  "## Overview\nAutomatically match escalated cases to the best available attorney.\n\n## Tasks\n- [ ] Score attorneys by: specialty match, jurisdiction, availability, current caseload\n- [ ] Implement assignment queue (FIFO + urgency weighting)\n- [ ] Send assignment notification (email + SMS) to attorney\n- [ ] 2-hour accept/decline window before auto-reassign\n- [ ] Admin can override assignment manually\n\n## Acceptance Criteria\n- Urgency-5 cases go to front of queue\n- Auto-reassign triggers within 2h if no response" \
+  "v2.0,backend,agent,database,priority: high" "$M20"
+
+create_issue \
+  "feat: Admin oversight dashboard" \
+  "## Overview\nAdmin panel for JROC staff to manage the entire platform.\n\n## Tasks\n- [ ] /admin route (role-gated: admin only)\n- [ ] Live escalation queue with case summaries\n- [ ] All users table with search + suspend/delete actions\n- [ ] All attorneys table with performance metrics\n- [ ] Platform-wide stats (cases opened, resolved, avg response time)\n- [ ] Document library management\n- [ ] Announcement broadcast system\n\n## Acceptance Criteria\n- Non-admin users get 403 on /admin\n- All stats update in real-time (Supabase Realtime)" \
+  "v2.0,frontend,backend,database,priority: high" "$M20"
+
+# â”€â”€ Issues â€” v2.1.0 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+hdr "Creating issues â€” v2.1.0 Mobile App"
+
+create_issue \
+  "feat: React Native mobile app scaffold (Expo)" \
+  "## Overview\nInitialize the React Native mobile app with Expo SDK.\n\n## Tasks\n- [ ] Create \`mobile/\` directory in monorepo\n- [ ] Expo SDK 51 + TypeScript + NativeWind\n- [ ] Shared \`packages/types\` for API types\n- [ ] Supabase JS client with AsyncStorage\n- [ ] Tab navigation: Chat, Cases, Documents, Profile\n- [ ] Auth flow (login, register, biometric unlock)\n- [ ] CI: Expo EAS build on merge to main\n\n## Acceptance Criteria\n- App runs on iOS Simulator + Android Emulator\n- Auth tokens persisted securely via Expo SecureStore" \
+  "v2.1,mobile,frontend,infrastructure,priority: high" "$M21"
+
+create_issue \
+  "feat: Document camera capture â†’ auto-ingest" \
+  "## Overview\nUsers can photograph a document with their phone camera and it gets ingested automatically.\n\n## Tasks\n- [ ] Expo Camera + ImagePicker integration\n- [ ] Auto-crop + perspective correction (react-native-document-scanner)\n- [ ] Upload image to Supabase Storage\n- [ ] Trigger OCR via Tesseract or Azure Form Recognizer\n- [ ] Extracted text â†’ chunking â†’ embedding pipeline\n- [ ] Show ingestion progress in app\n\n## Acceptance Criteria\n- Photographed document appears in Documents list within 60s\n- OCR accuracy > 90% on printed text" \
+  "v2.1,mobile,ingestion,priority: medium" "$M21"
+
+# â”€â”€ Issues â€” v2.3.0 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+hdr "Creating issues â€” v2.3.0 Analytics"
+
+create_issue \
+  "feat: Public impact dashboard" \
+  "## Overview\nPublic-facing page showing JROC's real-world impact metrics.\n\n## Tasks\n- [ ] /impact page (no auth required)\n- [ ] Stats: users served, cases opened, cases resolved, documents indexed\n- [ ] Legal category pie chart (Recharts)\n- [ ] Geographic heatmap by zip/county (react-simple-maps)\n- [ ] Monthly trend line chart\n- [ ] Anonymized testimonials section\n- [ ] Auto-refresh every 60s\n\n## Acceptance Criteria\n- Page loads in < 2s\n- All stats come from real DB data (not hardcoded)" \
+  "v2.3,frontend,backend,analytics,priority: high" "$M23"
+
+create_issue \
+  "feat: Monthly PDF impact report generator" \
+  "## Overview\nAuto-generate and email monthly impact report to JROC admin.\n\n## Tasks\n- [ ] Celery beat task: runs 1st of each month\n- [ ] Collect: cases opened/closed, agent usage, avg response time, top categories\n- [ ] Generate PDF via WeasyPrint with JROC branding\n- [ ] Email to admin via Resend\n- [ ] Store report in Supabase Storage\n- [ ] Admin can download past reports from dashboard\n\n## Acceptance Criteria\n- Report generated automatically on 1st of month\n- PDF includes charts and tables" \
+  "v2.3,backend,analytics,infrastructure,priority: medium" "$M23"
+
+# â”€â”€ Issues â€” v3.0.0 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+hdr "Creating issues â€” v3.0.0 Platform"
+
+create_issue \
+  "feat: Multi-tenant organization model" \
+  "## Overview\nTransform JROC into a multi-tenant SaaS that any legal aid org can use.\n\n## Tasks\n- [ ] Add \`organizations\` table with org_id FK on all user-facing tables\n- [ ] RLS updated: users can only see their org's data\n- [ ] Org admin panel: manage users, docs, branding\n- [ ] Custom subdomain routing: \`org.jrocprobono.org\`\n- [ ] Org-scoped document knowledge base\n- [ ] Stripe subscription billing per org\n\n## Acceptance Criteria\n- Data from Org A is never visible to Org B\n- Org admin can invite users and manage their org" \
+  "v3.0,backend,database,security,infrastructure,priority: high" "$M30"
+
+create_issue \
+  "feat: Twilio IVR voice interface" \
+  "## Overview\nUsers can call a phone number and speak their legal question to get an AI response.\n\n## Tasks\n- [ ] Purchase Twilio phone number\n- [ ] IVR webhook endpoint (POST /ivr/incoming)\n- [ ] Whisper API for speech-to-text\n- [ ] Route transcribed question to agent pipeline\n- [ ] OpenAI TTS for response playback\n- [ ] Spanish-language IVR option\n- [ ] Case creation by phone\n\n## Acceptance Criteria\n- Call answered within 3 rings\n- AI response played back within 10s of question\n- Spanish IVR selectable via menu" \
+  "v3.2,backend,agent,priority: high" "$M32"
+
+create_issue \
+  "feat: SMS interface (Twilio inbound/outbound)" \
+  "## Overview\nUsers can text a legal question to a dedicated number and get AI responses by SMS.\n\n## Tasks\n- [ ] Twilio inbound SMS webhook (POST /sms/incoming)\n- [ ] SMS session tracking (user identified by phone number)\n- [ ] Multi-turn SMS conversation state in Redis\n- [ ] Case creation via SMS\n- [ ] Document links via SMS (Supabase Storage URLs)\n- [ ] STOP / UNSTOP opt-out handling\n\n## Acceptance Criteria\n- SMS response delivered within 15s\n- Conversation thread maintained across messages\n- Opt-out respected immediately" \
+  "v3.2,backend,priority: medium" "$M32"
+
+# â”€â”€ GitHub Project Board â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+hdr "Creating GitHub Project Board"
+
+# Create project via GraphQL (Projects v2)
+PROJECT_RESP=$(gh api graphql -f query='
+  mutation {
+    createProjectV2(input: {
+      ownerId: "'$(gh api "users/$OWNER" --jq '.node_id')'"
+      title: "JROC AI Pro Bono â€” Roadmap"
+      repositoryId: "'$(gh api "repos/$FULL_REPO" --jq '.node_id')'"
+    }) {
+      projectV2 {
+        id
+        url
+        number
+      }
+    }
+  }
+')
+
+PROJECT_URL=$(echo "$PROJECT_RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['data']['createProjectV2']['projectV2']['url'])" 2>/dev/null || echo "(check GitHub manually)")
+
+ok "Project board created: $PROJECT_URL"
+
+# â”€â”€ Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+hdr "Setup Complete"
+
+echo ""
+echo -e "  ${BOLD}Repository${R}   : https://github.com/$FULL_REPO"
+echo -e "  ${BOLD}Milestones${R}   : https://github.com/$FULL_REPO/milestones"
+echo -e "  ${BOLD}Labels${R}       : https://github.com/$FULL_REPO/labels"
+echo -e "  ${BOLD}Issues${R}       : https://github.com/$FULL_REPO/issues"
+echo -e "  ${BOLD}Project Board${R}: $PROJECT_URL"
+echo ""
+echo -e "${GRN}${BOLD}All done! JROC GitHub project is ready. âš–ï¸ ðŸ¤–${R}"
+echo ""
