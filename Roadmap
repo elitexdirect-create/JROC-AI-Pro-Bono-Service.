@@ -1,0 +1,501 @@
+# ðŸ—ºï¸ JROC's AI Pro Bono Service â€” Complete Product Roadmap
+
+> **Mission**: Make quality legal assistance accessible to every person regardless
+> of income â€” powered by AI, driven by human compassion.
+>
+> **Owner**: Jesse (JROC) Â· realjayroc215 Â· Glenolden, PA
+> **Started**: August 2024 Â· **Current**: v1.0.0
+
+---
+
+## ðŸ“Š Release Overview
+
+| Version | Name | Target Date | Status | Theme |
+|---------|------|-------------|--------|-------|
+| v1.0.0 | **Foundation** | Aug 2024 | âœ… Complete | Core platform live |
+| v1.1.0 | **Polish** | Sep 2024 | ðŸ”¨ In Progress | UX + stability |
+| v1.2.0 | **Intelligence** | Oct 2024 | ðŸ“‹ Planned | Smarter agents |
+| v1.3.0 | **Community** | Nov 2024 | ðŸ“‹ Planned | Outreach + sharing |
+| v2.0.0 | **Attorney Portal** | Jan 2025 | ðŸ”­ Future | Human-in-the-loop |
+| v2.1.0 | **Mobile App** | Mar 2025 | ðŸ”­ Future | iOS + Android |
+| v2.2.0 | **Live Support** | May 2025 | ðŸ”­ Future | Real-time chat |
+| v2.3.0 | **Analytics** | Jul 2025 | ðŸ”­ Future | Impact dashboard |
+| v3.0.0 | **Platform** | Jan 2026 | ðŸŒ Vision | Multi-org SaaS |
+| v3.1.0 | **Marketplace** | Mar 2026 | ðŸŒ Vision | Attorney marketplace |
+| v3.2.0 | **Voice + SMS** | Jun 2026 | ðŸŒ Vision | Accessibility layer |
+
+---
+
+## âœ… v1.0.0 â€” Foundation *(Complete)*
+
+**Released**: August 2024
+
+The initial production release. Everything needed to go from zero to a live,
+working pro bono AI assistant platform.
+
+### Backend
+- [x] FastAPI application with full middleware stack (CORS, GZip, RequestID, Timing, AccessLog)
+- [x] Supabase client singleton + FastAPI dependency injection
+- [x] JWT authentication (HS256, 24h) via python-jose
+- [x] Custom exception hierarchy + global exception handlers
+- [x] Multi-agent system â€” SupervisorAgent routing to 4 specialists
+  - [x] LegalResearchAgent (RAG + GPT-4o)
+  - [x] IntakeAgent (guided Q&A)
+  - [x] DraftingAgent (legal document generation)
+  - [x] EscalationAgent (crisis triage + DB flag)
+- [x] Service layer â€” CaseService, ChatService, DocumentService, VectorSearchService
+- [x] Document ingestion pipeline (parse â†’ chunk â†’ embed â†’ upsert)
+- [x] Celery + Redis async task queue
+- [x] All routes: /auth, /chat, /cases, /documents, /health
+- [x] Full test suite (auth, cases, documents, agents, ingestion, health)
+- [x] Ruff linting + mypy type checking
+
+### Frontend
+- [x] Next.js 14 App Router + TypeScript + Tailwind CSS
+- [x] Auth pages (login, register) with JWT flow
+- [x] Dashboard with stats cards + quick actions
+- [x] AI Chat UI with markdown rendering + agent badges + source citations
+- [x] Case management (list, detail, create, urgency picker)
+- [x] Document upload (drag & drop, progress tracking, status polling)
+- [x] Full shadcn/ui component library
+- [x] Reusable component kit (AgentBadge, CaseCard, StatsCard, etc.)
+- [x] Auth middleware (protected route redirects)
+- [x] Custom hooks (use-auth, use-chat, use-cases, use-documents)
+
+### Database
+- [x] Full Supabase PostgreSQL schema (6 tables + pgvector)
+- [x] RLS policies on every table
+- [x] IVFFlat vector index (1536 dims, 100 lists)
+- [x] RPC functions (match_document_chunks, get_case_summary, etc.)
+- [x] Admin RPC functions (get_all_escalations, get_platform_stats, etc.)
+- [x] Storage bucket 'documents' with per-user RLS
+- [x] Edge functions (match_documents, escalation_webhook, on_user_delete)
+- [x] GDPR deletion pipeline
+
+### Infrastructure
+- [x] Docker Compose (dev + prod)
+- [x] Multi-stage Dockerfiles (backend + frontend)
+- [x] Nginx reverse proxy + rate limiting
+- [x] GitHub Actions CI/CD (lint, test, deploy to Railway + Vercel)
+- [x] Makefile (dev, test, lint, migrate, ingest, clean)
+- [x] One-shot bootstrap bash script (146 files)
+- [x] Dev seed script, admin creator, case exporter
+
+### Documentation
+- [x] README, ARCHITECTURE, DEPLOYMENT, API_REFERENCE
+- [x] AGENTS, INGESTION, DATABASE_SCHEMA, CONTRIBUTING, SECURITY
+- [x] CHANGELOG, LICENSE, ROADMAP
+- [x] GitHub issue/PR templates + CODEOWNERS
+- [x] Master system prompt
+
+---
+
+## ðŸ”¨ v1.1.0 â€” Polish *(In Progress Â· Sep 2024)*
+
+**Focus**: Stability, UX refinements, and developer experience improvements.
+
+### Backend
+- [ ] **Streaming chat responses** â€” SSE endpoint for token-by-token streaming
+- [ ] **Pagination** â€” all list endpoints get `limit`, `offset`, `total` support
+- [ ] **Rate limiting middleware** â€” per-user Redis-backed rate limiter in FastAPI
+- [ ] **Document retry** â€” manual re-trigger endpoint for failed ingestion
+- [ ] **Health check v2** â€” check Redis, Supabase, and OpenAI connectivity
+- [ ] **Celery Flower** â€” task monitoring UI at `/flower`
+- [ ] **Sentry integration** â€” error tracking in production
+- [ ] **API versioning** â€” v1 prefix solidified, v2 path reserved
+- [ ] **Request validation errors** â€” better 422 error messages for users
+
+### Frontend
+- [ ] **Streaming chat** â€” display tokens as they arrive (SSE consumer)
+- [ ] **Dark mode** â€” toggle with localStorage persistence
+- [ ] **Toast notifications** â€” success/error feedback on all actions
+- [ ] **Case status update UI** â€” change status from case detail page
+- [ ] **Conversation sidebar** â€” browse past conversations within chat
+- [ ] **Document status polling** â€” auto-refresh every 5s while processing
+- [ ] **Mobile responsiveness audit** â€” fix all breakpoints below 375px
+- [ ] **Loading skeletons** â€” replace spinners with skeleton cards
+- [ ] **Empty state illustrations** â€” SVG art for all empty states
+- [ ] **Copy button** â€” copy AI responses and drafted documents
+- [ ] **Print/export button** â€” export chat response as PDF
+
+### Database
+- [ ] **Conversation title auto-generation** â€” first message â†’ summary via LLM
+- [ ] **Message search** â€” full-text search across conversations (pg_trgm)
+- [ ] **Case notes field** â€” attorney-facing internal notes column
+- [ ] **Audit log table** â€” track all status changes on cases
+
+### DevOps
+- [ ] **Dependabot** â€” automated dependency PRs
+- [ ] **Pre-commit hooks** â€” ruff + type-check before every commit
+- [ ] **Docker health checks** â€” all containers have `HEALTHCHECK`
+- [ ] **Staging environment** â€” Railway staging + Vercel preview branches
+- [ ] **Log aggregation** â€” Papertrail or Logtail integration
+
+---
+
+## ðŸ“‹ v1.2.0 â€” Intelligence *(Planned Â· Oct 2024)*
+
+**Focus**: Smarter agents, better retrieval, and jurisdiction awareness.
+
+### Agent Enhancements
+- [ ] **Jurisdiction-aware routing** â€” agents adapt responses to user's state/city
+- [ ] **Citation linking** â€” agent responses link directly to source document page
+- [ ] **Multi-turn context** â€” agents remember facts across conversation turns
+- [ ] **Confidence scoring** â€” LegalResearchAgent rates its own confidence (1â€“5)
+  - Low confidence â†’ automatically triggers "consult attorney" disclaimer
+- [ ] **Agent chaining** â€” IntakeAgent hands structured data to DraftingAgent
+- [ ] **LangGraph workflow** â€” replace simple routing with stateful agent graph
+- [ ] **Tool use** â€” agents can call: date calculator, statute lookup, court finder
+- [ ] **Memory layer** â€” user preferences persisted across sessions (LangChain Memory)
+
+### Document Intelligence
+- [ ] **Table extraction** â€” parse tables from PDFs (camelot-py)
+- [ ] **Section awareness** â€” chunk by document section, not just token count
+- [ ] **Metadata tagging** â€” auto-tag documents by jurisdiction, law area, date
+- [ ] **Hybrid search** â€” combine pgvector similarity + pg_trgm keyword search
+- [ ] **Re-ranking** â€” Cohere rerank API for better chunk selection
+- [ ] **Document deduplication** â€” detect and skip duplicate uploads
+- [ ] **Batch URL ingestion** â€” ingest documents from a list of URLs
+- [ ] **Web scraping ingestion** â€” ingest from legal aid organization websites
+
+### New Agents
+- [ ] **TimelineAgent** â€” builds chronological case timeline from user input
+- [ ] **CourtFinderAgent** â€” finds nearest legal aid offices + court dates
+- [ ] **TranslationAgent** â€” translate AI responses to Spanish, French, Creole
+- [ ] **SummaryAgent** â€” summarize long case histories into 1-paragraph briefs
+
+---
+
+## ðŸ“‹ v1.3.0 â€” Community *(Planned Â· Nov 2024)*
+
+**Focus**: Referrals, sharing, and building trust with the community.
+
+### Features
+- [ ] **Legal resource directory** â€” searchable database of free legal aid orgs by zip code
+- [ ] **Case sharing** â€” generate shareable read-only case summary link
+- [ ] **Email reports** â€” weekly case status digest emailed to the user
+- [ ] **SMS notifications** â€” Twilio SMS for escalation alerts to users
+- [ ] **Referral system** â€” refer a friend â†’ both get priority queue access
+- [ ] **Testimonials page** â€” anonymized success stories
+- [ ] **FAQ knowledge base** â€” curated Q&A cards by legal category
+- [ ] **Blog/resources section** â€” SEO-optimized legal information articles
+- [ ] **Newsletter signup** â€” Resend-powered email newsletter
+- [ ] **Feedback system** â€” thumbs up/down on AI responses + optional comment
+
+### Trust & Safety
+- [ ] **Content moderation** â€” OpenAI Moderation API on all user inputs
+- [ ] **PII detection** â€” warn users before submitting sensitive info
+- [ ] **Terms of Service + Privacy Policy** â€” dedicated pages
+- [ ] **Cookie consent banner** â€” GDPR-compliant
+- [ ] **Accessibility audit** â€” WCAG 2.1 AA compliance pass
+
+---
+
+## ðŸ”­ v2.0.0 â€” Attorney Portal *(Future Â· Jan 2025)*
+
+**Focus**: Bring real human attorneys into the platform as a second tier.
+
+### Attorney Onboarding
+- [ ] **Attorney registration** â€” bar number verification + profile creation
+- [ ] **Specialty tags** â€” housing, family, immigration, employment, etc.
+- [ ] **Jurisdiction coverage** â€” which states/counties they cover
+- [ ] **Availability calendar** â€” set office hours + appointment slots
+- [ ] **Stripe Connect** â€” pro bono hours tracked; optional paid consultations
+- [ ] **Attorney dashboard** â€” see assigned cases, escalation queue, client messages
+
+### Case Assignment Engine
+- [ ] **Smart matching** â€” match escalated cases to attorneys by specialty + location
+- [ ] **Assignment queue** â€” FIFO queue with urgency weighting (urgency 5 â†’ front)
+- [ ] **Accept/decline** â€” attorney can accept or decline a case assignment
+- [ ] **Auto-reassign** â€” if declined within 2h â†’ reassign to next attorney
+- [ ] **SLA tracking** â€” flag cases with no attorney contact in 24h
+- [ ] **Case handoff notes** â€” AI generates a case summary for the attorney
+
+### Attorneyâ€“Client Messaging
+- [ ] **Secure in-app messaging** â€” end-to-end encrypted thread between client + attorney
+- [ ] **File sharing** â€” attorney can send documents to client
+- [ ] **Read receipts** â€” attorney sees when client has read their message
+- [ ] **Message templates** â€” attorney pre-built response templates
+- [ ] **Attorney notes** â€” private notes not visible to client
+
+### Admin Panel
+- [ ] **Case oversight dashboard** â€” all cases, all attorneys, live escalation queue
+- [ ] **Attorney performance metrics** â€” response times, cases closed, ratings
+- [ ] **User management** â€” suspend, delete, view any user
+- [ ] **Platform stats** â€” total cases, avg resolution time, agent usage breakdown
+- [ ] **Document library** â€” manage shared legal document templates
+- [ ] **Announcement system** â€” broadcast messages to all users
+
+---
+
+## ðŸ”­ v2.1.0 â€” Mobile App *(Future Â· Mar 2025)*
+
+**Focus**: Native iOS + Android app for users with limited desktop access.
+
+### Tech Stack
+- [ ] **React Native** + Expo SDK 51
+- [ ] **Shared TypeScript types** â€” monorepo with `packages/types`
+- [ ] **Supabase React Native** â€” `@supabase/supabase-js` + AsyncStorage
+- [ ] **Expo Notifications** â€” push notifications for case updates + messages
+
+### Features
+- [ ] **Full auth flow** â€” login, register, biometric unlock
+- [ ] **Chat UI** â€” native keyboard-aware scroll + voice input
+- [ ] **Push notifications** â€” new message, case update, attorney assignment
+- [ ] **Document camera** â€” photograph documents â†’ auto-upload + OCR ingestion
+- [ ] **Offline mode** â€” read recent messages and case details without connection
+- [ ] **Haptic feedback** â€” vibration on escalation, success, errors
+- [ ] **Deep links** â€” `jroc://cases/[id]` open specific case from notification
+- [ ] **App Store + Play Store** â€” submission + listing
+
+### Accessibility
+- [ ] **VoiceOver / TalkBack** â€” full screen reader support
+- [ ] **Large text mode** â€” dynamic type scaling
+- [ ] **High contrast theme**
+- [ ] **One-handed mode** â€” bottom sheet navigation
+
+---
+
+## ðŸ”­ v2.2.0 â€” Live Support *(Future Â· May 2025)*
+
+**Focus**: Real-time communication between clients, attorneys, and volunteers.
+
+### Real-Time Infrastructure
+- [ ] **Supabase Realtime** â€” live message delivery (no polling)
+- [ ] **Presence indicators** â€” show when attorney is online
+- [ ] **Typing indicators** â€” "Attorney is typing..."
+- [ ] **Read receipts** â€” double checkmark when message read
+- [ ] **WebRTC video calls** â€” attorneyâ€“client video consultation via Daily.co
+- [ ] **Call recording + transcription** â€” optional, consent-gated
+- [ ] **Screen sharing** â€” attorney can show documents on screen
+
+### Volunteer Network
+- [ ] **Paralegal portal** â€” volunteer paralegals assist with intake
+- [ ] **Law student integration** â€” supervised law student review track
+- [ ] **Volunteer scheduling** â€” shift-based availability system
+- [ ] **Volunteer training module** â€” in-app tutorial + quiz for volunteers
+- [ ] **Hours tracking** â€” volunteer hours log for CLE credit
+
+---
+
+## ðŸ”­ v2.3.0 â€” Analytics *(Future Â· Jul 2025)*
+
+**Focus**: Measure real-world impact and optimize the platform.
+
+### Impact Dashboard (Public)
+- [ ] **Cases opened** â€” running total by month
+- [ ] **Cases resolved** â€” % closed successfully
+- [ ] **Documents ingested** â€” total chunks indexed
+- [ ] **People served** â€” unique users helped
+- [ ] **Legal categories** â€” pie chart of issue types
+- [ ] **Geographic heatmap** â€” cases by zip code / county
+- [ ] **Response time** â€” avg time from escalation to attorney contact
+- [ ] **Testimonials counter** â€” positive outcome stories
+
+### Internal Analytics
+- [ ] **Agent usage breakdown** â€” % of queries per agent type
+- [ ] **Vector search quality** â€” avg similarity score per category
+- [ ] **Ingestion pipeline stats** â€” success rate, avg chunk count, avg time
+- [ ] **User funnel** â€” register â†’ first case â†’ first chat â†’ case closed
+- [ ] **Churn analysis** â€” users who registered but never opened a case
+- [ ] **Query clustering** â€” group similar questions to improve knowledge base
+- [ ] **A/B testing framework** â€” test different agent prompts
+
+### Reporting
+- [ ] **Monthly PDF reports** â€” auto-generated impact report
+- [ ] **Grant application exports** â€” data exports formatted for nonprofit grants
+- [ ] **Court outcomes tracking** â€” manual log of case outcomes by category
+
+---
+
+## ðŸŒ v3.0.0 â€” Platform *(Vision Â· Jan 2026)*
+
+**Focus**: Transform JROC from a single service into a white-label SaaS platform
+that any legal aid organization can deploy.
+
+### Multi-Tenant Architecture
+- [ ] **Organization model** â€” each org gets its own isolated tenant
+- [ ] **Org admin panel** â€” manage users, documents, agents, branding
+- [ ] **Custom domain** â€” `legal.mycity.org` â†’ org-specific deployment
+- [ ] **Custom branding** â€” logo, colors, org name throughout UI
+- [ ] **Org-scoped knowledge base** â€” documents visible only to that org
+- [ ] **Billing tiers** â€” free (community orgs) Â· pro Â· enterprise
+- [ ] **Stripe integration** â€” monthly subscription billing per org
+- [ ] **Org analytics** â€” each org sees only their own metrics
+
+### Platform Infrastructure
+- [ ] **Kubernetes deployment** â€” Helm charts for self-hosted orgs
+- [ ] **Multi-region** â€” US East, US West, EU West data residency
+- [ ] **SOC 2 Type II audit** â€” security compliance certification
+- [ ] **HIPAA readiness** â€” for orgs handling health-related legal cases
+- [ ] **SSO integration** â€” SAML / OAuth2 for org staff login
+- [ ] **API key management** â€” orgs call JROC APIs from their own apps
+- [ ] **Webhook system** â€” orgs subscribe to platform events
+- [ ] **SDK** â€” Python + TypeScript SDK for org integrations
+
+---
+
+## ðŸŒ v3.1.0 â€” Attorney Marketplace *(Vision Â· Mar 2026)*
+
+**Focus**: Connect clients directly with vetted attorneys for affordable paid consultations.
+
+### Marketplace Features
+- [ ] **Attorney profiles** â€” public listings with reviews, specialties, rates
+- [ ] **Search & filter** â€” by specialty, location, language, price, availability
+- [ ] **Consultation booking** â€” calendar-based appointment scheduling
+- [ ] **Flat-fee consultations** â€” 30-min calls starting at $25
+- [ ] **Pro bono slots** â€” attorneys can flag free availability slots
+- [ ] **Escrow payments** â€” Stripe Hold â†’ release after consultation
+- [ ] **Review system** â€” 1â€“5 stars + written review after consultation
+- [ ] **Attorney verification** â€” state bar API integration for license check
+- [ ] **Background check** â€” optional third-party background verification
+- [ ] **Dispute resolution** â€” platform-managed refund + dispute flow
+
+---
+
+## ðŸŒ v3.2.0 â€” Voice + SMS *(Vision Â· Jun 2026)*
+
+**Focus**: Reach users who don't have smartphones or reliable internet.
+
+### Voice (IVR)
+- [ ] **Twilio IVR** â€” call a number, speak your legal question, get AI response
+- [ ] **Speech-to-text** â€” Whisper API for transcription
+- [ ] **Text-to-speech** â€” OpenAI TTS for response playback
+- [ ] **Menu navigation** â€” press 1 for housing, 2 for employment, etc.
+- [ ] **Case creation by phone** â€” guided intake entirely over voice
+- [ ] **Callback scheduling** â€” "press 5 to request attorney callback"
+- [ ] **Spanish IVR** â€” full Spanish-language voice flow
+
+### SMS (Text Message)
+- [ ] **Twilio SMS** â€” text any legal question to a dedicated number
+- [ ] **Stateful SMS sessions** â€” multi-turn SMS conversation tracking
+- [ ] **Case updates by SMS** â€” "Your case has been assigned to an attorney"
+- [ ] **Document links by SMS** â€” "Your demand letter is ready: [link]"
+- [ ] **Opt-out management** â€” STOP / UNSTOP handling
+- [ ] **MMS document upload** â€” text a photo of a document â†’ auto-ingest
+
+### Offline + Low-Bandwidth
+- [ ] **Progressive Web App (PWA)** â€” installable, works offline
+- [ ] **Service Worker caching** â€” cache recent cases + messages
+- [ ] **Low-data mode** â€” disable images, compress responses
+- [ ] **Email interface** â€” email a question â†’ get AI response by email (Resend)
+
+---
+
+## ðŸ—‚ï¸ GitHub Milestones
+
+```
+v1.1.0 - Polish         â†’ Due: Sep 30, 2024
+v1.2.0 - Intelligence   â†’ Due: Oct 31, 2024
+v1.3.0 - Community      â†’ Due: Nov 30, 2024
+v2.0.0 - Attorney Portal â†’ Due: Jan 31, 2025
+v2.1.0 - Mobile App     â†’ Due: Mar 31, 2025
+v2.2.0 - Live Support   â†’ Due: May 31, 2025
+v2.3.0 - Analytics      â†’ Due: Jul 31, 2025
+v3.0.0 - Platform       â†’ Due: Jan 31, 2026
+v3.1.0 - Marketplace    â†’ Due: Mar 31, 2026
+v3.2.0 - Voice + SMS    â†’ Due: Jun 30, 2026
+```
+
+---
+
+## ðŸ·ï¸ GitHub Issue Labels
+
+| Label | Color | Purpose |
+|-------|-------|---------|
+| `v1.1` | `#0075ca` | v1.1.0 milestone |
+| `v1.2` | `#0052a3` | v1.2.0 milestone |
+| `v2.0` | `#6e40c9` | v2.0.0 attorney portal |
+| `v3.0` | `#1a7f37` | v3.0.0 platform |
+| `agent` | `#e4e669` | Multi-agent system |
+| `ingestion` | `#f9d0c4` | Document pipeline |
+| `frontend` | `#cfd3d7` | Next.js UI |
+| `backend` | `#bfd4f2` | FastAPI backend |
+| `database` | `#b60205` | Supabase / migrations |
+| `security` | `#d93f0b` | Security / RLS / auth |
+| `infrastructure` | `#0e8a16` | Docker / CI/CD |
+| `accessibility` | `#e99695` | A11y improvements |
+| `good first issue` | `#7057ff` | New contributor friendly |
+| `help wanted` | `#008672` | Community help needed |
+| `priority: critical` | `#b60205` | Must fix immediately |
+| `priority: high` | `#d93f0b` | Fix this sprint |
+| `priority: medium` | `#e4e669` | Next sprint |
+| `priority: low` | `#cfd3d7` | Backlog |
+
+---
+
+## ðŸ”‘ Key Performance Indicators (KPIs)
+
+### User Impact
+| Metric | v1.0 Target | v2.0 Target | v3.0 Target |
+|--------|-------------|-------------|-------------|
+| Users served | 100 | 2,500 | 50,000 |
+| Cases opened | 200 | 5,000 | 100,000 |
+| Cases resolved | 120 | 3,500 | 75,000 |
+| Avg response time | < 8s | < 5s | < 3s |
+| Escalation response | < 24h | < 4h | < 1h |
+| User satisfaction | â€” | > 4.2/5 | > 4.5/5 |
+
+### Technical
+| Metric | v1.0 Target | v2.0 Target | v3.0 Target |
+|--------|-------------|-------------|-------------|
+| API uptime | 99% | 99.5% | 99.9% |
+| Test coverage | 70% | 80% | 90% |
+| Vector search latency | < 500ms | < 300ms | < 100ms |
+| CI pipeline time | < 5min | < 4min | < 3min |
+| Documents indexed | 50 | 500 | 10,000 |
+
+---
+
+## ðŸ’° Funding & Sustainability
+
+### v1.0â€“v1.3 (Bootstrap Phase)
+- Self-funded by JROC
+- OpenAI API costs: ~$20â€“50/month at 100 users
+
+### v2.0 (Growth Phase)
+- Apply for: LSC Technology Initiative Grant
+- Apply for: Google.org Impact Challenge
+- Apply for: Microsoft Justice Reform Initiative
+- Apply for: MacArthur Foundation grants
+- Explore: Law school partnerships (free attorney hours)
+
+### v3.0 (Platform Phase)
+- SaaS revenue from org subscriptions
+- Attorney marketplace transaction fees (10%)
+- Grant funding for free tier (subsidized by paid tier)
+- B Corp certification for mission alignment
+
+---
+
+## ðŸ¤ Partnership Targets
+
+| Organization | Type | Target Version |
+|---|---|---|
+| Philadelphia Legal Assistance | Legal Aid Org | v1.3 |
+| Community Legal Services PA | Legal Aid Org | v1.3 |
+| Villanova Law School | Law School | v2.0 |
+| Temple Beasley School of Law | Law School | v2.0 |
+| American Bar Association | National Body | v2.0 |
+| NAACP Legal Defense Fund | Civil Rights | v2.1 |
+| National Domestic Violence Hotline | Crisis Org | v2.2 |
+| Twilio.org | Tech for Good | v3.2 |
+| Google.org | Tech for Good | v3.0 |
+
+---
+
+## ðŸ“… Sprint Schedule
+
+Each version = 4 two-week sprints (8 weeks total):
+
+```
+Sprint 1: Backend features + DB migrations
+Sprint 2: Frontend features + UI components
+Sprint 3: Testing + integration + bugfixes
+Sprint 4: Docs + deployment + release
+```
+
+---
+
+*Last updated: August 2026 Â· Next review: September 2026*
+*Maintained by: Jesse (realjayroc215) Â· github.com/realjayroc215/jroc-ai-pro-bono*
